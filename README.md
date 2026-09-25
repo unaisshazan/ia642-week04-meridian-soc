@@ -85,7 +85,61 @@ MTTD on the same 100011 rule: alert #1 = **4.67 min**, alert #6 = **3.00 min**. 
 - Tuned rule plus SOP: retry-then-success is a close, not an escalate.
 - The original no-success burst still raises 100020.
 
-Dashboard captures are in `submission/Evidence1_*.png` through `Evidence8_*.png`.
+Dashboard captures are below. Each image is a live manager or Discover view from this build.
+
+---
+
+## Evidence walkthrough
+
+### 1. Empty SIEM baseline
+
+After first admin login, no agents are registered. This is the “before” picture: collection, parse, and dashboards exist, but nothing is shipping events yet.
+
+![Evidence 1 — empty Wazuh overview](submission/Evidence1_Wazuh_Overview.png)
+
+### 2. Windows agent Active
+
+MERIDIAN-DC01 checks in to `192.168.56.30`. Active status and last keep-alive prove the Windows side of the SOC is online.
+
+![Evidence 2 — DC01 on the Agents list](submission/Evidence2_DC01_Agents.png)
+
+![Evidence 2 detail — DC01 keep-alive](submission/Evidence2_DC01_Detail.png)
+
+### 3. Both agents Active
+
+MERIDIAN-DC01 (Windows) and MERIDIAN-RED01 (Linux) are both Active. That is the minimum two-host telemetry plane for Meridian.
+
+![Evidence 3 — both agents Active](submission/Evidence3_Both_Agents.png)
+
+### 4. Raw SSH failure (not a custom rule yet)
+
+Discover shows one `sshd` authentication failure on RED01: user `wazuh`, source `127.0.0.1`. This is built-in rule **5760** (T1110). Custom 100020 has not fired yet; this only proves the agent is reading SSH telemetry.
+
+![Evidence 4 — raw sshd failure](submission/Evidence4_SSHD_Failed.png)
+
+### 5. Custom rule 100020 fires
+
+Five failures from the same source inside 120 seconds trip **100020** at level 10. `previous_output` lists the Failed password lines. This is the behavior match (burst), not a single fat-finger.
+
+![Evidence 5 — rule 100020](submission/Evidence5_Rule_100020.png)
+
+### 6. Supporting events under the fire
+
+The same window in Discover as **5760** rows: same agent, same source IP, same username. An analyst can reconstruct why 100020 counted to five.
+
+![Evidence 6 — supporting 5760 events](submission/Evidence6_Rule_5760.png)
+
+### 7. Tuned path: retry then success (SOP close)
+
+After the tune (`same_field` dstuser) plus the playbook: two 5760 failures, then **5715** success for the same user and IP. That is a VPN/job retry class. Do **not** escalate.
+
+![Evidence 7 — retry then success](submission/Evidence7_Retry_Success.png)
+
+### 8. No-success burst still pages
+
+The earlier 100020 fire has no following 5715. Five Failed password lines, same source, level 10. The tune did not blind the SOC to a burst with no login success.
+
+![Evidence 8 — 100020 no-success burst](submission/Evidence8_100020_Burst.png)
 
 ---
 
@@ -182,7 +236,8 @@ Use spaces around `:` when the search language is DQL.
 
 ```text
 submission/
-  Evidence1_…Evidence8_*.png     Dashboard captures
+  Evidence1_…Evidence8_*.png     Dashboard captures (embedded in this README)
+  Evidence2_DC01_Detail.png      Extra DC01 keep-alive view
   local_rules.xml                Final tuned rules
   local_rules_partD.xml          Pre-tune 100020
   Tier1_SOP_100020.txt           Close-if-success playbook
