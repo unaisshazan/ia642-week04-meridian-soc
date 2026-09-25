@@ -1,3 +1,6 @@
+# Course report (names / identifiers) — never commit
+*.pdf
+
 # Secrets and live Wazuh keys — never commit
 .env
 .env.*

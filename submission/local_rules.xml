@@ -1,5 +1,5 @@
 <!--
-  Meridian SOC — Wazuh local rules (Lab 4.2, final / Challenge-tuned).
+  Meridian SOC — Wazuh local rules (final / Challenge-tuned).
   Deployed on MERIDIAN-SOC01 as /var/ossec/etc/rules/local_rules.xml
   Parent for 100020 is built-in 5760 (Wazuh 4.14 journald sshd auth-fail).
 -->
