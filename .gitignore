@@ -1,0 +1,17 @@
+# Secrets and live Wazuh keys — never commit
+.env
+.env.*
+*.pem
+*.key
+client.keys
+authd.pass
+wazuh-passwords.txt
+*password*
+*secret*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

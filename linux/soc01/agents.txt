@@ -1,0 +1,8 @@
+
+Wazuh agent_control. List of available agents:
+   ID: 000, Name: meridian-soc01 (server), IP: 127.0.0.1, Active/Local
+   ID: 001, Name: MERIDIAN-DC01, IP: any, Active
+   ID: 002, Name: MERIDIAN-RED01, IP: any, Active
+
+List of agentless devices:
+

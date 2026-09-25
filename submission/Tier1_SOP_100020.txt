@@ -1,0 +1,9 @@
+Meridian SOC — Tier 1 SOP for rule 100020 (Lab 4.2 Challenge)
+
+On every 100020 alert, search the next 120 seconds for a successful SSH
+login (Wazuh rule 5715) for the same source IP and the same username.
+
+- If success is present and the account is a known staff or service
+  identity: close as VPN or job retry. Do not escalate.
+- If there is no success, or the account is unused, root, or unknown:
+  escalate to Tier 2.
