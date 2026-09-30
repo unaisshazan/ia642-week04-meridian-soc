@@ -38,9 +38,10 @@
 \setlist[enumerate]{leftmargin=1.3em,itemsep=0.28em,topsep=0.3em,parsep=0pt}
 \newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
 
-\titleformat{name=\section,numberless}{\large\bfseries\color{tblhead}}{}{0em}{}
+% \filright = flush-left titles (avoids huge gaps between words from full justification)
+\titleformat{name=\section,numberless}{\large\bfseries\color{tblhead}\filright}{}{0em}{}
 \titlespacing*{name=\section,numberless}{0pt}{0.85em}{0.3em}
-\titleformat{name=\subsection,numberless}{\normalsize\bfseries\color{tblhead}}{}{0em}{}
+\titleformat{name=\subsection,numberless}{\normalsize\bfseries\color{tblhead}\filright}{}{0em}{}
 \titlespacing*{name=\subsection,numberless}{0pt}{0.55em}{0.2em}
 
 \newcommand{\labpart}[1]{\par\vspace{0.35em}\section*{#1}}
