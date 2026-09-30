@@ -1,6 +1,7 @@
 % IA 642 Defensive Security
 % Week 04 Module 01 Lab 4.1: Kerberoasting a Service Account, Closing It With a gMSA
-% Submit as: Ali_Week04_Module01_Lab.pdf
+% Group: Unais Ali (E02805019) and Hafiz Usama (E02574092)
+% Submit as: Ali_Usama_Week04_Module01_Lab.pdf
 \documentclass[11pt,letterpaper]{article}
 
 \usepackage[margin=0.75in]{geometry}
@@ -23,7 +24,7 @@
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 \usepackage{xurl}
 
-\hypersetup{pdfauthor={Unais Ali}, pdftitle={IA 642 Week 04 Lab 4.1 Kerberoasting and gMSA}}
+\hypersetup{pdfauthor={Unais Ali; Hafiz Usama}, pdftitle={IA 642 Week 04 Lab 4.1 Kerberoasting and gMSA}}
 
 \definecolor{tblhead}{HTML}{1F4E79}
 \definecolor{tblrow}{HTML}{F0F4F8}
@@ -79,13 +80,21 @@
 \begin{center}
 {\LARGE\bfseries IA 642 Defensive Security}\\[0.25em]
 {\Large Week 04 Module 01 Lab 4.1}\\[0.2em]
-{\large Kerberoasting a Service Account, and Closing It With a gMSA}\\[0.45em]
-{\normalsize Unais Ali \quad\textbar\quad Eastern Michigan University}\\[0.15em]
+{\large Kerberoasting a Service Account, and Closing It With a gMSA}\\[0.35em]
 {\small Identity, Access \& Privileged Access Management Hands-On Build}\\[0.25em]
 {\small Repository:
 \href{https://github.com/unaisshazan/ia642-week04-meridian-soc}{github.com/unaisshazan/ia642-week04-meridian-soc}
 (folder \texttt{4.1/})}\\[0.35em]
 \end{center}
+
+\begin{tabularx}{\textwidth}{@{}l X l l@{}}
+\toprule
+\textbf{Group members} & Unais Ali & \textbf{EID} & E02805019 \\
+ & Hafiz Usama &  & E02574092 \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.6em}
 
 \section*{Lab overview}
 
@@ -335,9 +344,7 @@ Commands may be adapted as follows if the lab environment requires it: Impacket 
   \item Evidence \#9: AES-only \texttt{klist} (Challenge)
   \item Critical thinking \#1--\#5 answers (this report)
   \item Adaptation note (above)
-  \item File name: \texttt{Ali\_Week04\_Module01\_Lab.pdf}
-  \item Lab artifacts / scripts:
-        \url{https://github.com/unaisshazan/ia642-week04-meridian-soc/tree/main/4.1}
+  \item File name: \texttt{Ali\_Usama\_Week04\_Module01\_Lab.pdf}
 \end{enumerate}
 
 \labpart{References}
@@ -349,8 +356,5 @@ Commands may be adapted as follows if the lab environment requires it: Impacket 
   \item RFC 6749 OAuth 2.0; RFC 7636 PKCE; RFC 9700 OAuth 2.0 Security BCP
   \item Keycloak Server Administration Guide; NIST SP 800-63B
 \end{itemize}
-
-\vspace{1em}
-\noindent\textit{Status:} Parts A--E and AES challenge executed on live VMs (DC 10.77.0.10, RED 10.77.0.20). Evidence figures \#1--\#9 embedded from lab captures (Keycloak 26 on RED01; tokens for \#7--\#8).
 
 \end{document}
