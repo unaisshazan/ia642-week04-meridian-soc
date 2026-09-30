@@ -335,19 +335,6 @@ AES-only closes the weak-cipher path that made RC4 tickets cheaper to attack his
 
 Commands may be adapted as follows if the lab environment requires it: Impacket package name \texttt{impacket-scripts} vs \texttt{GetUserSPNs.py} path on Kali; Keycloak image tag and \texttt{kcadm.sh} attribute syntax for PKCE; internal adapter name (\texttt{Ethernet 2} vs another index) for static IP; \texttt{hashcat --force} when no GPU is present. For Part~E, Evidence \#7--\#8 were captured with the Authorization Code + PKCE~S256 flow (not password grant): \texttt{curl} cookie jar for the Keycloak login session (Python \texttt{urllib} dropped \texttt{AUTH\_SESSION\_ID} and returned ``Cookie not found''), then token exchange with \texttt{code\_verifier}. All work remains on \texttt{meridian-lab-net}; NAT is disconnected for Parts B--E.
 
-\labpart{Submission checklist}
-
-\begin{enumerate}
-  \item Evidence \#1--\#2: SPN registration and baseline \texttt{klist} (Part B)
-  \item Evidence \#3--\#4: GetUserSPNs capture and hashcat crack (Part C)
-  \item Evidence \#5--\#6: gMSA proof and failed roast (Part D)
-  \item Evidence \#7--\#8: token JSON and JWT decode (Part E)
-  \item Evidence \#9: AES-only \texttt{klist} (Challenge)
-  \item Critical thinking \#1--\#5 answers (this report)
-  \item Adaptation note (above)
-  \item File name: \texttt{Ali\_Usama\_Week04\_Module01\_Lab.pdf}
-\end{enumerate}
-
 \labpart{References}
 
 \begin{itemize}
