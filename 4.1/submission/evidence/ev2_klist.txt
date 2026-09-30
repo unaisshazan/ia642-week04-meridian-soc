@@ -1,0 +1,64 @@
+Evidence #2 – klist as j.reyes @ MERIDIAN-DC01
+Commands: klist purge; klist get MSSQLSvc/billing.meridian.local:1433; klist
+
+meridian\j.reyes
+
+
+Current LogonId is 0:0x1c7621
+	Deleting all tickets:
+	Ticket(s) purged!
+
+
+Current LogonId is 0:0x1c7621
+A ticket to MSSQLSvc/billing.meridian.local:1433 has been retrieved successfully.
+
+Cached Tickets: (2)
+
+#0>	Client: j.reyes @ MERIDIAN.LOCAL
+	Server: krbtgt/MERIDIAN.LOCAL @ MERIDIAN.LOCAL
+	KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+	Ticket Flags 0x40e10000 -> forwardable renewable initial pre_authent name_canonicalize
+	Start Time: 9/29/2026 20:51:34 (local)
+	End Time:   9/30/2026 6:51:34 (local)
+	Renew Time: 10/6/2026 20:51:34 (local)
+	Session Key Type: AES-256-CTS-HMAC-SHA1-96
+	Cache Flags: 0x1 -> PRIMARY
+	Kdc Called: MERIDIAN-DC01
+
+#1>	Client: j.reyes @ MERIDIAN.LOCAL
+	Server: MSSQLSvc/billing.meridian.local:1433 @ MERIDIAN.LOCAL
+	KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+	Ticket Flags 0x40a10000 -> forwardable renewable pre_authent name_canonicalize
+	Start Time: 9/29/2026 20:51:34 (local)
+	End Time:   9/30/2026 6:51:34 (local)
+	Renew Time: 10/6/2026 20:51:34 (local)
+	Session Key Type: AES-256-CTS-HMAC-SHA1-96
+	Cache Flags: 0
+	Kdc Called: MERIDIAN-DC01
+
+
+Current LogonId is 0:0x1c7621
+
+Cached Tickets: (2)
+
+#0>	Client: j.reyes @ MERIDIAN.LOCAL
+	Server: krbtgt/MERIDIAN.LOCAL @ MERIDIAN.LOCAL
+	KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+	Ticket Flags 0x40e10000 -> forwardable renewable initial pre_authent name_canonicalize
+	Start Time: 9/29/2026 20:51:34 (local)
+	End Time:   9/30/2026 6:51:34 (local)
+	Renew Time: 10/6/2026 20:51:34 (local)
+	Session Key Type: AES-256-CTS-HMAC-SHA1-96
+	Cache Flags: 0x1 -> PRIMARY
+	Kdc Called: MERIDIAN-DC01
+
+#1>	Client: j.reyes @ MERIDIAN.LOCAL
+	Server: MSSQLSvc/billing.meridian.local:1433 @ MERIDIAN.LOCAL
+	KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96
+	Ticket Flags 0x40a10000 -> forwardable renewable pre_authent name_canonicalize
+	Start Time: 9/29/2026 20:51:34 (local)
+	End Time:   9/30/2026 6:51:34 (local)
+	Renew Time: 10/6/2026 20:51:34 (local)
+	Session Key Type: AES-256-CTS-HMAC-SHA1-96
+	Cache Flags: 0
+	Kdc Called: MERIDIAN-DC01

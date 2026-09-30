@@ -1,7 +1,11 @@
-# Course report (names / identifiers) — never commit
-*.pdf
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
 
-# Secrets and live Wazuh keys — never commit
+# Secrets — never commit
 .env
 .env.*
 *.pem
@@ -9,12 +13,18 @@
 client.keys
 authd.pass
 wazuh-passwords.txt
-*password*
+DC01_CREDENTIALS.txt
 *secret*
+*CREDENTIALS*
 
-# Editor / OS
-.DS_Store
-Thumbs.db
-*.swp
-.idea/
-.vscode/
+# Build junk
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
+# Allow graded PDFs under submission folders
+*.pdf
+!4.1/submission/*.pdf
+!4.2/submission/*.pdf

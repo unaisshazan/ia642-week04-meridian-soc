@@ -1,0 +1,3 @@
+grant=authorization_code
+pkce=S256
+transport=curl-cookie-jar

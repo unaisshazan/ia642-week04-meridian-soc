@@ -1,0 +1,36 @@
+=== DC01 to RED01 === 
+
+Pinging 10.77.0.20 with 32 bytes of data:
+Reply from 10.77.0.20: bytes=32 time=1ms TTL=64
+Reply from 10.77.0.20: bytes=32 time=2ms TTL=64
+Reply from 10.77.0.20: bytes=32 time<1ms TTL=64
+Reply from 10.77.0.20: bytes=32 time=2ms TTL=64
+
+Ping statistics for 10.77.0.20:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 0ms, Maximum = 2ms, Average = 1ms
+=== hostname/ip === 
+meridian-dc01
+
+Windows IP Configuration
+
+
+Ethernet adapter Ethernet:
+
+   Connection-specific DNS Suffix  . : hsd1.mi.comcast.net
+   IPv6 Address. . . . . . . . . . . : fd17:625c:f037:2:6557:a7b3:5450:a8f0
+   Link-local IPv6 Address . . . . . : fe80::6557:a7b3:5450:a8f0%7
+   IPv4 Address. . . . . . . . . . . : 10.0.2.15
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : fe80::2%7
+                                       10.0.2.2
+
+Ethernet adapter Ethernet 2:
+
+   Connection-specific DNS Suffix  . : 
+   Link-local IPv6 Address . . . . . : fe80::dc:8fae:520c:4f17%4
+   IPv4 Address. . . . . . . . . . . : 10.77.0.10
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 
+

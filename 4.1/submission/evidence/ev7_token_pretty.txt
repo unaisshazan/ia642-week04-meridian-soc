@@ -1,0 +1,13 @@
+Evidence #7 – token_response.json (authorization_code + PKCE S256)
+Keys: access_token, expires_in, id_token, not-before-policy, refresh_expires_in, refresh_token, scope, session_state, token_type
+
+{
+  "grant": "authorization_code + PKCE S256",
+  "token_type": "Bearer",
+  "expires_in": 300,
+  "refresh_expires_in": 1800,
+  "scope": "openid email profile",
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5OGtwQnFhWlBOZ1B3T2ZjRUxxN2hKX05RVTlOYVJzMFVxcTl3...",
+  "refresh_token": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIyZTE2ZjJhYS03ZDFlLTRkOTMtYjg4Yi0wNTIwYmZmNDNhOWMi...",
+  "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5OGtwQnFhWlBOZ1B3T2ZjRUxxN2hKX05RVTlOYVJzMFVxcTl3..."
+}

@@ -1,0 +1,4 @@
+Registered ServicePrincipalNames for CN=svc-billingsql,OU=Service Accounts,DC=meridian,DC=local:
+	MSSQLSvc/billing:1433
+	MSSQLSvc/billing.meridian.local:1433
+

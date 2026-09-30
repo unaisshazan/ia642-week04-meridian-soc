@@ -1,0 +1,42 @@
+hashcat (v6.2.6) starting
+
+You have enabled --force to bypass dangerous warnings and errors!
+This can hide serious problems and should only be done when debugging.
+Do not report hashcat issues encountered when using --force.
+
+OpenCL API (OpenCL 3.0 PoCL 5.0+debian  Linux, None+Asserts, RELOC, SPIR, LLVM 16.0.6, SLEEF, DISTRO, POCL_DEBUG) - Platform #1 [The pocl project]
+==================================================================================================================================================
+* Device #1: cpu-haswell-Intel(R) Core(TM) i9-14900HX, 1082/2229 MB (512 MB allocatable), 2MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 256
+
+Counting lines in /home/wazuh/gmsa_tgs.hashes. Please be patient...Counted lines in /home/wazuh/gmsa_tgs.hashesHashfile '/home/wazuh/gmsa_tgs.hashes' on line 1 ($krb5t...d5c5efc34fcd109cca06d9482e4a026c): Separator unmatched
+Parsing Hashes: 0/1 (0.00%)...No hashes loaded.
+
+Started: Wed Sep 30 02:29:41 2026
+Stopped: Wed Sep 30 02:29:42 2026
+hashcat (v6.2.6) starting
+
+You have enabled --force to bypass dangerous warnings and errors!
+This can hide serious problems and should only be done when debugging.
+Do not report hashcat issues encountered when using --force.
+
+OpenCL API (OpenCL 3.0 PoCL 5.0+debian  Linux, None+Asserts, RELOC, SPIR, LLVM 16.0.6, SLEEF, DISTRO, POCL_DEBUG) - Platform #1 [The pocl project]
+==================================================================================================================================================
+* Device #1: cpu-haswell-Intel(R) Core(TM) i9-14900HX, 1082/2229 MB (512 MB allocatable), 2MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 256
+
+Counting lines in /home/wazuh/gmsa_tgs.hashes. Please be patient...Counted lines in /home/wazuh/gmsa_tgs.hashesHashfile '/home/wazuh/gmsa_tgs.hashes' on line 1 ($krb5t...d5c5efc34fcd109cca06d9482e4a026c): Token length exception
+Parsing Hashes: 0/1 (0.00%)...
+* Token length exception: 1/1 hashes
+  This error happens if the wrong hash type is specified, if the hashes are
+  malformed, or if input is otherwise not as expected (for example, if the
+  --username option is used but no username is present)
+
+No hashes loaded.
+
+Started: Wed Sep 30 02:29:42 2026
+Stopped: Wed Sep 30 02:29:42 2026

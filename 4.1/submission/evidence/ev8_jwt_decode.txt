@@ -1,0 +1,50 @@
+Evidence #8 – decoded access_token (authorization_code + PKCE S256)
+HEADER:
+{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "y8kpBqaZPNgPwOfcELq7hJ_NQU9NaRs0Uqq9wXZxXPY"
+}
+
+PAYLOAD:
+{
+  "exp": 1790743411,
+  "iat": 1790743111,
+  "auth_time": 1790743111,
+  "jti": "7b3196e0-642e-4af9-af78-a028f17e11ea",
+  "iss": "http://127.0.0.1:8080/realms/meridian",
+  "aud": "account",
+  "sub": "abd22f8e-b1ad-4207-8533-556e4d8be859",
+  "typ": "Bearer",
+  "azp": "meridian-billing-app",
+  "sid": "3febdad3-b5be-41ee-af8d-ee3bc401fd44",
+  "acr": "1",
+  "allowed-origins": [
+    "http://localhost:8081",
+    "http://localhost",
+    "http://127.0.0.1:8081"
+  ],
+  "realm_access": {
+    "roles": [
+      "offline_access",
+      "default-roles-meridian",
+      "uma_authorization"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  "scope": "openid email profile",
+  "email_verified": true,
+  "name": "J Reyes",
+  "preferred_username": "j.reyes",
+  "given_name": "J",
+  "family_name": "Reyes",
+  "email": "j.reyes@meridian.local"
+}
